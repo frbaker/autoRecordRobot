@@ -15,16 +15,26 @@
 #include <frc2/command/button/JoystickButton.h>
 #include <units/angle.h>
 #include <units/velocity.h>
+#include <frc2/command/Commands.h>
 
 #include <utility>
+#include <fstream>
+#include <filesystem>
+#include <iostream>
 
 #include "Constants.h"
 #include "subsystems/DriveSubsystem.h"
+#include "ControllerSnapshot.h"
 
 using namespace DriveConstants;
 
 RobotContainer::RobotContainer() {
   // Initialize all of your commands and subsystems here
+  recordingAutonomous = false;
+  doneRecordingAutonomous = false;
+
+  m_chooser.SetDefaultOption("haha", "/home/lvuser/controllerRecordings/cool.csv");
+  m_chooser.AddOption("hehe", "hehe");
 
   // Configure the button bindings
   ConfigureButtonBindings();
@@ -42,59 +52,63 @@ RobotContainer::RobotContainer() {
             -units::radians_per_second_t{frc::ApplyDeadband(
                 m_driverController.GetRightX(), OIConstants::kDriveDeadband)},
             true);
+        if(AutoConstants::CanRecordAuto){
+            if(doneRecordingAutonomous){
+                std::cout << "Routine written to disk" << std::endl;
+                m_routineHandler.writeRoutineToDisk(recordedSnapshots);
+                recordedSnapshots.clear();
+                doneRecordingAutonomous = false;
+            }
+            else if(recordingAutonomous){
+                ControllerSnapshot snapshot{m_driverController.GetLeftX(), m_driverController.GetLeftY(), m_driverController.GetRightX(), m_driverController.GetRightY(), m_driverController.GetLeftTriggerAxis(), m_driverController.GetRightTriggerAxis(), m_driverController.GetAButton(), m_driverController.GetBButton(), m_driverController.GetXButton(), m_driverController.GetYButton(), m_driverController.GetLeftBumper(), m_driverController.GetRightBumper(), m_driverController.GetPOV()};
+                recordedSnapshots.push_back(snapshot);
+            }
+        }
+
       },
       {&m_drive}));
+    //
 }
 
 void RobotContainer::ConfigureButtonBindings() {
   frc2::JoystickButton(&m_driverController,
                        frc::XboxController::Button::kRightBumper)
       .WhileTrue(new frc2::RunCommand([this] { m_drive.SetX(); }, {&m_drive}));
+
+  frc2::JoystickButton(&m_driverController, frc::XboxController::Button::kLeftStick).OnTrue(
+    new frc2::InstantCommand([this] {
+        if(recordingAutonomous){
+            doneRecordingAutonomous = true;
+            recordingAutonomous = false;
+        }
+        else{
+            recordingAutonomous = true;
+        }
+    })
+  );
 }
 
-frc2::Command* RobotContainer::GetAutonomousCommand() {
-  // Set up config for trajectory
-  frc::TrajectoryConfig config(AutoConstants::kMaxSpeed,
-                               AutoConstants::kMaxAcceleration);
-  // Add kinematics to ensure max speed is actually obeyed
-  config.SetKinematics(m_drive.kDriveKinematics);
+frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
 
-  // An example trajectory to follow.  All units in meters.
-  auto exampleTrajectory = frc::TrajectoryGenerator::GenerateTrajectory(
-      // Start at the origin facing the +X direction
-      frc::Pose2d{0_m, 0_m, 0_deg},
-      // Pass through these two interior waypoints, making an 's' curve path
-      {frc::Translation2d{1_m, 1_m}, frc::Translation2d{2_m, -1_m}},
-      // End 3 meters straight ahead of where we started, facing forward
-      frc::Pose2d{3_m, 0_m, 0_deg},
-      // Pass the config
-      config);
+  std::vector<ControllerSnapshot> routine = m_routineHandler.getRoutineFromDisk(m_chooser.GetSelected());
 
-  frc::ProfiledPIDController<units::radians> thetaController{
-      AutoConstants::kPThetaController, 0, 0,
-      AutoConstants::kThetaControllerConstraints};
+  if(controllerPlaybackAuto){
+    std::vector<frc2::CommandPtr> commands;
+    for(const auto& snapshot : routine){
+        commands.push_back(frc2::cmd::RunOnce([this, snapshot] {
+            m_drive.Drive(
+            -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftY, OIConstants::kDriveDeadband)},
+            -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftX, OIConstants::kDriveDeadband)},
+            -units::radians_per_second_t{frc::ApplyDeadband(snapshot.rightX, OIConstants::kDriveDeadband)},
+            true);
+            //m_drive.drive(stuff lol)
+            //m_haha.hehe(hohe)
+        }));
+    }
+    return frc2::cmd::Sequence(std::move(commands));
+  }
 
-  thetaController.EnableContinuousInput(units::radian_t{-std::numbers::pi},
-                                        units::radian_t{std::numbers::pi});
-
-  frc2::SwerveControllerCommand<4> swerveControllerCommand(
-      exampleTrajectory, [this]() { return m_drive.GetPose(); },
-
-      m_drive.kDriveKinematics,
-
-      frc::PIDController{AutoConstants::kPXController, 0, 0},
-      frc::PIDController{AutoConstants::kPYController, 0, 0}, thetaController,
-
-      [this](auto moduleStates) { m_drive.SetModuleStates(moduleStates); },
-
-      {&m_drive});
-
-  // Reset odometry to the starting pose of the trajectory.
-  m_drive.ResetOdometry(exampleTrajectory.InitialPose());
-
-  // no auto
-  return new frc2::SequentialCommandGroup(
-      std::move(swerveControllerCommand),
-      frc2::InstantCommand(
-          [this]() { m_drive.Drive(0_mps, 0_mps, 0_rad_per_s, false); }, {}));
+  return frc2::InstantCommand([this] {}).ToPtr();
 }
+
+

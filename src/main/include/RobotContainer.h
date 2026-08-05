@@ -16,6 +16,9 @@
 
 #include "Constants.h"
 #include "subsystems/DriveSubsystem.h"
+#include "subsystems/RoutineHandler.h"
+
+#include <ControllerSnapshot.h>
 
 /**
  * This class is where the bulk of the robot should be declared.  Since
@@ -28,7 +31,7 @@ class RobotContainer {
  public:
   RobotContainer();
 
-  frc2::Command* GetAutonomousCommand();
+  frc2::CommandPtr GetAutonomousCommand();
 
  private:
   // The driver's controller
@@ -38,9 +41,15 @@ class RobotContainer {
 
   // The robot's subsystems
   DriveSubsystem m_drive;
+  RoutineHandler m_routineHandler;
 
   // The chooser for the autonomous routines
-  frc::SendableChooser<frc2::Command*> m_chooser;
+  frc::SendableChooser<std::string> m_chooser;
+
+  bool recordingAutonomous;
+  bool doneRecordingAutonomous;
+  bool controllerPlaybackAuto;
+  std::vector<ControllerSnapshot> recordedSnapshots;
 
   void ConfigureButtonBindings();
 };

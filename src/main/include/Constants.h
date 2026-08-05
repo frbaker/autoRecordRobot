@@ -80,6 +80,7 @@ constexpr double kDriveWheelFreeSpeedRps =
 }  // namespace ModuleConstants
 
 namespace AutoConstants {
+constexpr bool CanRecordAuto = true;
 constexpr auto kMaxSpeed = 3_mps;
 constexpr auto kMaxAcceleration = 3_mps_sq;
 constexpr auto kMaxAngularSpeed = 3.142_rad_per_s;

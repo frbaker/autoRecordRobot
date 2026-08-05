@@ -8,6 +8,7 @@
 #include <frc2/command/Command.h>
 
 #include "RobotContainer.h"
+#include <ControllerSnapshot.h>
 
 class Robot : public frc::TimedRobot {
  public:
@@ -21,10 +22,13 @@ class Robot : public frc::TimedRobot {
   void TeleopPeriodic() override;
   void TestPeriodic() override;
 
+
  private:
   // Have it null by default so that if testing teleop it
   // doesn't have undefined behavior and potentially crash.
-  frc2::Command* m_autonomousCommand = nullptr;
+  frc2::CommandPtr m_autonomousCommand;
 
   RobotContainer m_container;
+  int autoPlaybackIndex = 0;
+  std::vector<ControllerSnapshot> routine;
 };
