@@ -30,6 +30,7 @@ std::vector<ControllerSnapshot> RoutineHandler::getRoutineFromDisk(std::string p
         std::string token;
         ControllerSnapshot snapshot;
         
+        std::getline(iss, token, ','); snapshot.timestampSeconds = std::stod(token);
         std::getline(iss, token, ','); snapshot.leftX = std::stod(token);
         std::getline(iss, token, ','); snapshot.leftY = std::stod(token);
         std::getline(iss, token, ','); snapshot.rightX = std::stod(token);

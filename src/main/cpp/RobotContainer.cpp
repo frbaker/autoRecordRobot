@@ -4,6 +4,7 @@
 
 #include "RobotContainer.h"
 
+#include <frc/Timer.h>
 #include <frc/controller/PIDController.h>
 #include <frc/geometry/Translation2d.h>
 #include <frc/shuffleboard/Shuffleboard.h>
@@ -12,8 +13,10 @@
 #include <frc2/command/InstantCommand.h>
 #include <frc2/command/SequentialCommandGroup.h>
 #include <frc2/command/SwerveControllerCommand.h>
+#include <frc2/command/WaitCommand.h>
 #include <frc2/command/button/JoystickButton.h>
 #include <units/angle.h>
+#include <units/time.h>
 #include <units/velocity.h>
 #include <frc2/command/Commands.h>
 
@@ -32,6 +35,7 @@ RobotContainer::RobotContainer() {
   // Initialize all of your commands and subsystems here
   recordingAutonomous = false;
   doneRecordingAutonomous = false;
+  controllerPlaybackAuto = true;
 
   m_chooser.SetDefaultOption("haha", "/home/lvuser/controllerRecordings/cool.csv");
   m_chooser.AddOption("hehe", "hehe");
@@ -60,7 +64,21 @@ RobotContainer::RobotContainer() {
                 doneRecordingAutonomous = false;
             }
             else if(recordingAutonomous){
-                ControllerSnapshot snapshot{m_driverController.GetLeftX(), m_driverController.GetLeftY(), m_driverController.GetRightX(), m_driverController.GetRightY(), m_driverController.GetLeftTriggerAxis(), m_driverController.GetRightTriggerAxis(), m_driverController.GetAButton(), m_driverController.GetBButton(), m_driverController.GetXButton(), m_driverController.GetYButton(), m_driverController.GetLeftBumper(), m_driverController.GetRightBumper(), m_driverController.GetPOV()};
+                ControllerSnapshot snapshot;
+                snapshot.timestampSeconds = frc::Timer::GetFPGATimestamp().value();
+                snapshot.leftX = m_driverController.GetLeftX();
+                snapshot.leftY = m_driverController.GetLeftY();
+                snapshot.rightX = m_driverController.GetRightX();
+                snapshot.rightY = m_driverController.GetRightY();
+                snapshot.LT = m_driverController.GetLeftTriggerAxis();
+                snapshot.RT = m_driverController.GetRightTriggerAxis();
+                snapshot.A = m_driverController.GetAButton();
+                snapshot.B = m_driverController.GetBButton();
+                snapshot.X = m_driverController.GetXButton();
+                snapshot.Y = m_driverController.GetYButton();
+                snapshot.LB = m_driverController.GetLeftBumper();
+                snapshot.RB = m_driverController.GetRightBumper();
+                snapshot.POV = m_driverController.GetPOV();
                 recordedSnapshots.push_back(snapshot);
             }
         }
@@ -92,18 +110,27 @@ frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
 
   std::vector<ControllerSnapshot> routine = m_routineHandler.getRoutineFromDisk(m_chooser.GetSelected());
 
-  if(controllerPlaybackAuto){
+  if(controllerPlaybackAuto && !routine.empty()){
     std::vector<frc2::CommandPtr> commands;
-    for(const auto& snapshot : routine){
-        commands.push_back(frc2::cmd::RunOnce([this, snapshot] {
-            m_drive.Drive(
-            -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftY, OIConstants::kDriveDeadband)},
-            -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftX, OIConstants::kDriveDeadband)},
-            -units::radians_per_second_t{frc::ApplyDeadband(snapshot.rightX, OIConstants::kDriveDeadband)},
-            true);
-            //m_drive.drive(stuff lol)
-            //m_haha.hehe(hohe)
-        }));
+    double previousTimestamp = routine.front().timestampSeconds;
+
+    for(std::size_t index = 0; index < routine.size(); ++index){
+      const auto& snapshot = routine[index];
+      double waitSeconds = index == 0 ? 0.0 : snapshot.timestampSeconds - previousTimestamp;
+      if (waitSeconds < 0.0) {
+        waitSeconds = 0.0;
+      }
+      previousTimestamp = snapshot.timestampSeconds;
+
+      commands.push_back(frc2::cmd::Sequence(
+          frc2::RunCommand([this, snapshot] {
+              m_drive.Drive(
+                  -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftY, OIConstants::kDriveDeadband)},
+                  -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftX, OIConstants::kDriveDeadband)},
+                  -units::radians_per_second_t{frc::ApplyDeadband(snapshot.rightX, OIConstants::kDriveDeadband)},
+                  true);
+          }, {&m_drive}).ToPtr(),
+          frc2::WaitCommand(units::second_t{waitSeconds}).ToPtr()));
     }
     return frc2::cmd::Sequence(std::move(commands));
   }
