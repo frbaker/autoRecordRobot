@@ -5,6 +5,7 @@
 #include "RobotContainer.h"
 
 #include <frc/Timer.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/controller/PIDController.h>
 #include <frc/geometry/Translation2d.h>
 #include <frc/shuffleboard/Shuffleboard.h>
@@ -37,11 +38,24 @@ RobotContainer::RobotContainer() {
   doneRecordingAutonomous = false;
   controllerPlaybackAuto = true;
 
-  m_chooser.SetDefaultOption("haha", "/home/lvuser/controllerRecordings/cool.csv");
-  m_chooser.AddOption("hehe", "hehe");
+  m_chooser.SetDefaultOption("No Auto", "");
+
+  const std::filesystem::path recordingsDir{"/home/lvuser/controllerRecordings"};
+  if (std::filesystem::exists(recordingsDir)) {
+    for (const auto& entry : std::filesystem::directory_iterator(recordingsDir)) {
+      if (!entry.is_regular_file()) {
+        continue;
+      }
+      const auto path = entry.path();
+      if (path.extension() == ".csv") {
+        m_chooser.AddOption(path.filename().string(), path.string());
+      }
+    }
+  }
 
   // Configure the button bindings
   ConfigureButtonBindings();
+  frc::SmartDashboard::PutData("Auto Mode", &m_chooser);
 
   // Set up default drive command
   // The left stick controls translation of the robot.
@@ -59,7 +73,12 @@ RobotContainer::RobotContainer() {
         if(AutoConstants::CanRecordAuto){
             if(doneRecordingAutonomous){
                 std::cout << "Routine written to disk" << std::endl;
-                m_routineHandler.writeRoutineToDisk(recordedSnapshots);
+                const std::string csvPath = m_routineHandler.writeRoutineToDisk(recordedSnapshots);
+                if (!csvPath.empty()) {
+                  m_chooser.AddOption(std::filesystem::path(csvPath).filename().string(), csvPath);
+                  frc::SmartDashboard::PutData("Auto Mode", &m_chooser);
+                  m_routineHandler.writeRoutineToCpp(recordedSnapshots, csvPath);
+                }
                 recordedSnapshots.clear();
                 doneRecordingAutonomous = false;
             }
