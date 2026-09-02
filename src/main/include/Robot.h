@@ -26,7 +26,7 @@ class Robot : public frc::TimedRobot {
  private:
   // Have it null by default so that if testing teleop it
   // doesn't have undefined behavior and potentially crash.
-  frc2::CommandPtr m_autonomousCommand;
+  //frc2::CommandPtr m_autonomousCommand(frc2::InstantCommand());
 
   RobotContainer m_container;
   int autoPlaybackIndex = 0;

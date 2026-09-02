@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <vector>
 #include "ControllerSnapshot.h"
+#include <fmt/format.h>
 
 class RoutineHandler{
     public:

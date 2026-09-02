@@ -37,11 +37,9 @@ void Robot::DisabledPeriodic() {}
  * RobotContainer} class.
  */
 void Robot::AutonomousInit() {
-  //autoPlaybackIndex = 0;
-  //std::string autoPath = m_container.GetAutonomousPath();
-  m_autonomousCommand = m_container.GetAutonomousCommand();
-
-  frc2::CommandScheduler::GetInstance().Schedule(m_autonomousCommand);
+  frc2::CommandScheduler::GetInstance().Schedule(
+      m_container.GetAutonomousCommand()
+  );
 }
 
 void Robot::AutonomousPeriodic() {
@@ -49,13 +47,7 @@ void Robot::AutonomousPeriodic() {
 }
 
 void Robot::TeleopInit() {
-  // This makes sure that the autonomous stops running when
-  // teleop starts running. If you want the autonomous to
-  // continue until interrupted by another command, remove
-  // this line or comment it out.
-  if (m_autonomousCommand) {
-    m_autonomousCommand.Cancel();
-  }
+  frc2::CommandScheduler::GetInstance().CancelAll();
 }
 
 /**

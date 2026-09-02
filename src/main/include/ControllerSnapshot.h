@@ -1,4 +1,5 @@
 #pragma once
+#include <fmt/format.h>
 
 struct ControllerSnapshot{
     double leftX, leftY, rightX, rightY, LT, RT;

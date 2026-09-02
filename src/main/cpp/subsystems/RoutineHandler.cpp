@@ -1,4 +1,5 @@
 #include <subsystems/RoutineHandler.h>
+#include <iostream>
 
 void RoutineHandler::writeRoutineToDisk(std::vector<ControllerSnapshot>& snapshots){
   std::filesystem::create_directories("/home/lvuser/controllerRecordings");
@@ -26,23 +27,30 @@ std::vector<ControllerSnapshot> RoutineHandler::getRoutineFromDisk(std::string p
 
     std::string line;
     while (std::getline(file, line)) {
+        if(line.empty()) continue;
         std::istringstream iss(line);
         std::string token;
         ControllerSnapshot snapshot;
-        
-        std::getline(iss, token, ','); snapshot.leftX = std::stod(token);
-        std::getline(iss, token, ','); snapshot.leftY = std::stod(token);
-        std::getline(iss, token, ','); snapshot.rightX = std::stod(token);
-        std::getline(iss, token, ','); snapshot.rightY = std::stod(token);
-        std::getline(iss, token, ','); snapshot.LT = std::stod(token);
-        std::getline(iss, token, ','); snapshot.RT = std::stod(token);
-        std::getline(iss, token, ','); snapshot.A = std::stoi(token);
-        std::getline(iss, token, ','); snapshot.B = std::stoi(token);
-        std::getline(iss, token, ','); snapshot.X = std::stoi(token);
-        std::getline(iss, token, ','); snapshot.Y = std::stoi(token);
-        std::getline(iss, token, ','); snapshot.LB = std::stoi(token);
-        std::getline(iss, token, ','); snapshot.RB = std::stoi(token);
-        std::getline(iss, token, ','); snapshot.POV = std::stoi(token);
+        try {
+            std::getline(iss, token, ','); snapshot.leftX = std::stod(token);
+            std::getline(iss, token, ','); snapshot.leftY = std::stod(token);
+            std::getline(iss, token, ','); snapshot.rightX = std::stod(token);
+            std::getline(iss, token, ','); snapshot.rightY = std::stod(token);
+            std::getline(iss, token, ','); snapshot.LT = std::stod(token);
+            std::getline(iss, token, ','); snapshot.RT = std::stod(token);
+            std::getline(iss, token, ','); snapshot.A = token == "true";
+            std::getline(iss, token, ','); snapshot.B = token == "true";
+            std::getline(iss, token, ','); snapshot.X = token == "true";
+            std::getline(iss, token, ','); snapshot.Y = token == "true";
+            std::getline(iss, token, ','); snapshot.LB = token == "true";
+            std::getline(iss, token, ','); snapshot.RB = token == "true";
+            std::getline(iss, token, ','); snapshot.POV = std::stoi(token);
+            
+            snapshots.push_back(snapshot);
+        } catch (const std::exception& e) {
+            std::cout << "Error parsing line: " << line << " - " << e.what() << std::endl;
+            continue;
+        }
         
         snapshots.push_back(snapshot);
     }

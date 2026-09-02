@@ -25,6 +25,9 @@
 #include "Constants.h"
 #include "subsystems/DriveSubsystem.h"
 #include "ControllerSnapshot.h"
+#include "frc2/command/WaitCommand.h"
+#include <frc/smartdashboard/SmartDashboard.h>
+#include <frc2/command/Subsystem.h>
 
 using namespace DriveConstants;
 
@@ -33,8 +36,9 @@ RobotContainer::RobotContainer() {
   recordingAutonomous = false;
   doneRecordingAutonomous = false;
 
-  m_chooser.SetDefaultOption("haha", "/home/lvuser/controllerRecordings/cool.csv");
+  m_chooser.SetDefaultOption("test", "/home/lvuser/controllerRecordings/test.csv");
   m_chooser.AddOption("hehe", "hehe");
+  frc::SmartDashboard::PutData("auto", &m_chooser);
 
   // Configure the button bindings
   ConfigureButtonBindings();
@@ -90,25 +94,42 @@ void RobotContainer::ConfigureButtonBindings() {
 
 frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
 
-  std::vector<ControllerSnapshot> routine = m_routineHandler.getRoutineFromDisk(m_chooser.GetSelected());
+    std::vector<ControllerSnapshot> routine = m_routineHandler.getRoutineFromDisk(m_chooser.GetSelected());
+    controllerPlaybackAuto = true;
 
-  if(controllerPlaybackAuto){
-    std::vector<frc2::CommandPtr> commands;
+    if(controllerPlaybackAuto){
+    /*std::vector<frc2::CommandPtr> commands;
     for(const auto& snapshot : routine){
-        commands.push_back(frc2::cmd::RunOnce([this, snapshot] {
+        commands.push_back(frc2::InstantCommand([this, snapshot] {
             m_drive.Drive(
-            -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftY, OIConstants::kDriveDeadband)},
-            -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftX, OIConstants::kDriveDeadband)},
-            -units::radians_per_second_t{frc::ApplyDeadband(snapshot.rightX, OIConstants::kDriveDeadband)},
-            true);
-            //m_drive.drive(stuff lol)
-            //m_haha.hehe(hohe)
-        }));
+                -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftY, OIConstants::kDriveDeadband)},
+                -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftX, OIConstants::kDriveDeadband)},
+                -units::radians_per_second_t{frc::ApplyDeadband(snapshot.rightX, OIConstants::kDriveDeadband)},
+                false
+            );
+        }).ToPtr());
+        commands.push_back(frc2::WaitCommand(20_ms).ToPtr());
     }
-    return frc2::cmd::Sequence(std::move(commands));
+    return frc2::cmd::Sequence(std::move(commands));*/
+    auto state = std::make_shared<size_t>(0);
+    return frc2::FunctionalCommand(
+        []{},
+        [this, state, routine]{
+            const auto& snapshot = routine[*state];
+            m_drive.Drive(
+                -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftY, OIConstants::kDriveDeadband)},
+                -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftX, OIConstants::kDriveDeadband)},
+                -units::radians_per_second_t{frc::ApplyDeadband(snapshot.rightX, OIConstants::kDriveDeadband)},
+                false
+            );
+            (*state)++;
+        },
+        [this](bool interrupted){
+            m_drive.Drive(0_mps, 0_mps, 0_rad_per_s, false);
+        },
+        [state, &routine]{ return *state >= routine.size(); }
+    ).ToPtr();
   }
 
   return frc2::InstantCommand([this] {}).ToPtr();
 }
-
-
