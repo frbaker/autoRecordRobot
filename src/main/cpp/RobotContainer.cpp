@@ -108,7 +108,7 @@ frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
     controllerPlaybackAuto = true;
 
     if(controllerPlaybackAuto){
-    return autoRecordLib::CreateAutonomousRoutine(routine.snapshots);
+        return autoRecordLib::CreateAutonomousRoutine(routine);
     }
 
   return frc2::InstantCommand([this] {}).ToPtr();
