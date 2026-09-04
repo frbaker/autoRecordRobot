@@ -14,11 +14,10 @@
 #include <frc2/command/ParallelRaceGroup.h>
 #include <frc2/command/RunCommand.h>
 
+
 #include "Constants.h"
 #include "subsystems/DriveSubsystem.h"
-#include "subsystems/RoutineHandler.h"
-
-#include <ControllerSnapshot.h>
+#include "autoRecordLib/AutonomousRecorder.h"
 
 /**
  * This class is where the bulk of the robot should be declared.  Since
@@ -41,7 +40,7 @@ class RobotContainer {
 
   // The robot's subsystems
   DriveSubsystem m_drive;
-  RoutineHandler m_routineHandler;
+  autoRecordLib::AutonomousRecorder m_recorder;
 
   // The chooser for the autonomous routines
   frc::SendableChooser<std::string> m_chooser;
@@ -49,7 +48,7 @@ class RobotContainer {
   bool recordingAutonomous;
   bool doneRecordingAutonomous;
   bool controllerPlaybackAuto;
-  std::vector<ControllerSnapshot> recordedSnapshots;
+  //std::vector<ControllerSnapshot> recordedSnapshots;
 
   void ConfigureButtonBindings();
 };

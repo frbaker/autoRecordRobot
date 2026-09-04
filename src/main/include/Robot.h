@@ -8,7 +8,6 @@
 #include <frc2/command/Command.h>
 
 #include "RobotContainer.h"
-#include <ControllerSnapshot.h>
 
 class Robot : public frc::TimedRobot {
  public:
@@ -29,6 +28,4 @@ class Robot : public frc::TimedRobot {
   //frc2::CommandPtr m_autonomousCommand(frc2::InstantCommand());
 
   RobotContainer m_container;
-  int autoPlaybackIndex = 0;
-  std::vector<ControllerSnapshot> routine;
 };

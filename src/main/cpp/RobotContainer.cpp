@@ -24,10 +24,11 @@
 
 #include "Constants.h"
 #include "subsystems/DriveSubsystem.h"
-#include "ControllerSnapshot.h"
+//#include "ControllerSnapshot.h"
 #include "frc2/command/WaitCommand.h"
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc2/command/Subsystem.h>
+#include <autoRecordLib/RoutineHandler.h>
 
 using namespace DriveConstants;
 
@@ -39,6 +40,15 @@ RobotContainer::RobotContainer() {
   m_chooser.SetDefaultOption("test", "/home/lvuser/controllerRecordings/test.csv");
   m_chooser.AddOption("hehe", "hehe");
   frc::SmartDashboard::PutData("auto", &m_chooser);
+
+  autoRecordLib::RegisterAutoCommands([this](autoRecordLib::ControllerSnapshot snapshot){
+    m_drive.Drive(
+        -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftY, OIConstants::kDriveDeadband)},
+        -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftX, OIConstants::kDriveDeadband)},
+        -units::radians_per_second_t{frc::ApplyDeadband(snapshot.rightX, OIConstants::kDriveDeadband)},
+        false
+    );
+  });
 
   // Configure the button bindings
   ConfigureButtonBindings();
@@ -59,19 +69,18 @@ RobotContainer::RobotContainer() {
         if(AutoConstants::CanRecordAuto){
             if(doneRecordingAutonomous){
                 std::cout << "Routine written to disk" << std::endl;
-                m_routineHandler.writeRoutineToDisk(recordedSnapshots);
-                recordedSnapshots.clear();
+                autoRecordLib::writeRoutineToDisk(m_recorder);
+                m_recorder.ClearSnapshots();
+                //recordedSnapshots.clear();
                 doneRecordingAutonomous = false;
             }
             else if(recordingAutonomous){
-                ControllerSnapshot snapshot{m_driverController.GetLeftX(), m_driverController.GetLeftY(), m_driverController.GetRightX(), m_driverController.GetRightY(), m_driverController.GetLeftTriggerAxis(), m_driverController.GetRightTriggerAxis(), m_driverController.GetAButton(), m_driverController.GetBButton(), m_driverController.GetXButton(), m_driverController.GetYButton(), m_driverController.GetLeftBumper(), m_driverController.GetRightBumper(), m_driverController.GetPOV()};
-                recordedSnapshots.push_back(snapshot);
+                m_recorder.RecordSnapshot(m_driverController);
             }
         }
 
       },
       {&m_drive}));
-    //
 }
 
 void RobotContainer::ConfigureButtonBindings() {
@@ -94,42 +103,13 @@ void RobotContainer::ConfigureButtonBindings() {
 
 frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
 
-    std::vector<ControllerSnapshot> routine = m_routineHandler.getRoutineFromDisk(m_chooser.GetSelected());
+    std::string path = m_chooser.GetSelected();
+    autoRecordLib::Routine routine = autoRecordLib::getRoutineFromDisk(path);
     controllerPlaybackAuto = true;
 
     if(controllerPlaybackAuto){
-    /*std::vector<frc2::CommandPtr> commands;
-    for(const auto& snapshot : routine){
-        commands.push_back(frc2::InstantCommand([this, snapshot] {
-            m_drive.Drive(
-                -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftY, OIConstants::kDriveDeadband)},
-                -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftX, OIConstants::kDriveDeadband)},
-                -units::radians_per_second_t{frc::ApplyDeadband(snapshot.rightX, OIConstants::kDriveDeadband)},
-                false
-            );
-        }).ToPtr());
-        commands.push_back(frc2::WaitCommand(20_ms).ToPtr());
+    return autoRecordLib::CreateAutonomousRoutine(routine.snapshots);
     }
-    return frc2::cmd::Sequence(std::move(commands));*/
-    auto state = std::make_shared<size_t>(0);
-    return frc2::FunctionalCommand(
-        []{},
-        [this, state, routine]{
-            const auto& snapshot = routine[*state];
-            m_drive.Drive(
-                -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftY, OIConstants::kDriveDeadband)},
-                -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftX, OIConstants::kDriveDeadband)},
-                -units::radians_per_second_t{frc::ApplyDeadband(snapshot.rightX, OIConstants::kDriveDeadband)},
-                false
-            );
-            (*state)++;
-        },
-        [this](bool interrupted){
-            m_drive.Drive(0_mps, 0_mps, 0_rad_per_s, false);
-        },
-        [state, &routine]{ return *state >= routine.size(); }
-    ).ToPtr();
-  }
 
   return frc2::InstantCommand([this] {}).ToPtr();
 }

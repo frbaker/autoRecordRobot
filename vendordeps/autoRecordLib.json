@@ -1,0 +1,27 @@
+{
+    "fileName": "autoRecordLib.json",
+    "name": "autoRecordLib",
+    "version": "1.1.2",
+    "frcYear": "2026",
+    "uuid": "23394170-6c3e-4a01-ae75-cb4f88cd0056",
+    "mavenUrls": [
+        "https://raw.githubusercontent.com/frbaker/WPILibAutoRecordLib/main/build/outputs/maven"
+    ],
+    "jsonUrl": "https://raw.githubusercontent.com/frbaker/WPILibAutoRecordLib/main/autoRecordLib.json",
+    "jniDependencies": [],
+    "cppDependencies": [
+        {
+            "groupId": "com.team3267",
+            "artifactId": "autoRecordLib",
+            "version": "1.1.2",
+            "libName": "autoRecordLib",
+            "headerClassifier": "headers",
+            "sharedLibrary": true,
+            "skipLocalFolder": true,
+            "binaryPlatforms": [
+                "linuxathena"
+            ]
+        }
+    ],
+    "javaDependencies": []
+}
