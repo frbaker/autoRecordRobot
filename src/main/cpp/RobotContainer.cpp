@@ -41,7 +41,7 @@ RobotContainer::RobotContainer() {
   m_chooser.AddOption("hehe", "hehe");
   frc::SmartDashboard::PutData("auto", &m_chooser);
 
-  autoRecordLib::RegisterAutoCommands([this](autoRecordLib::ControllerSnapshot snapshot){
+  autoRecordLib::RegisterAutoCommands([this]{/*Start stuff here. Like reset gyro maybe*/},[this](autoRecordLib::ControllerSnapshot snapshot){
     m_drive.Drive(
         -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftY, OIConstants::kDriveDeadband)},
         -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftX, OIConstants::kDriveDeadband)},

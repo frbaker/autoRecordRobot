@@ -1,7 +1,7 @@
 {
     "fileName": "autoRecordLib.json",
     "name": "autoRecordLib",
-    "version": "1.1.4",
+    "version": "1.1.6",
     "frcYear": "2026",
     "uuid": "23394170-6c3e-4a01-ae75-cb4f88cd0056",
     "mavenUrls": [
@@ -13,7 +13,7 @@
         {
             "groupId": "com.team3267",
             "artifactId": "autoRecordLib",
-            "version": "1.1.4",
+            "version": "1.1.6",
             "libName": "autoRecordLib",
             "headerClassifier": "headers",
             "sharedLibrary": true,
