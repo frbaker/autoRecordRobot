@@ -48,6 +48,12 @@ RobotContainer::RobotContainer() {
         -units::radians_per_second_t{frc::ApplyDeadband(snapshot.rightX, OIConstants::kDriveDeadband)},
         false
     );
+    if(snapshot.A){
+        m_shooter.Run();
+    }
+    else{
+        m_shooter.Stop();
+    }
   });
 
   // Configure the button bindings
@@ -84,9 +90,10 @@ RobotContainer::RobotContainer() {
 }
 
 void RobotContainer::ConfigureButtonBindings() {
-  frc2::JoystickButton(&m_driverController,
-                       frc::XboxController::Button::kRightBumper)
-      .WhileTrue(new frc2::RunCommand([this] { m_drive.SetX(); }, {&m_drive}));
+  frc2::JoystickButton(&m_driverController,frc::XboxController::Button::kRightBumper).WhileTrue(
+    new frc2::RunCommand([this] {
+         m_drive.SetX(); 
+    }, {&m_drive}));
 
   frc2::JoystickButton(&m_driverController, frc::XboxController::Button::kLeftStick).OnTrue(
     new frc2::InstantCommand([this] {
@@ -99,6 +106,16 @@ void RobotContainer::ConfigureButtonBindings() {
         }
     })
   );
+
+  frc2::JoystickButton(&m_driverController, frc::XboxController::Button::kA).OnTrue(
+    new frc2::InstantCommand([this]{
+        m_shooter.Run();
+    }, {&m_shooter})
+  ).OnFalse(
+    new frc2::InstantCommand([this]{
+        m_shooter.Stop();
+    }, {&m_shooter})
+  );
 }
 
 frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
@@ -108,7 +125,7 @@ frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
     controllerPlaybackAuto = true;
 
     if(controllerPlaybackAuto){
-        return autoRecordLib::CreateAutonomousRoutine(routine);
+        return autoRecordLib::CreateAutonomousRoutine(routine,{&m_drive});
     }
 
   return frc2::InstantCommand([this] {}).ToPtr();

@@ -101,3 +101,11 @@ namespace OIConstants {
 constexpr int kDriverControllerPort = 0;
 constexpr double kDriveDeadband = 0.05;
 }  // namespace OIConstants
+
+namespace ShooterConstants {
+    constexpr int kLeftShooterCanId = 12;
+    constexpr int kRightShooterCanId = 13;
+    constexpr int kLeftFeederCanId = 10;
+    constexpr int kRightFeederCanId = 11;
+    constexpr int kRotorCanId = 14;
+} //namespace ShooterConstants

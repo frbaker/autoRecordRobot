@@ -18,6 +18,7 @@
 #include "Constants.h"
 #include "subsystems/DriveSubsystem.h"
 #include "autoRecordLib/AutonomousRecorder.h"
+#include "subsystems/Shooter.h"
 
 /**
  * This class is where the bulk of the robot should be declared.  Since
@@ -40,6 +41,7 @@ class RobotContainer {
 
   // The robot's subsystems
   DriveSubsystem m_drive;
+  Shooter m_shooter;
   autoRecordLib::AutonomousRecorder m_recorder;
 
   // The chooser for the autonomous routines
