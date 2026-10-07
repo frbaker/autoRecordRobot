@@ -13,4 +13,4 @@
 11. You can close your terminal now<br>
 12. Now go into ```RobotContainer.cpp``` and add an autonomous to the autonomous chooser like this:
 ```m_chooser.AddOption("WHATEVER-YOU-WANT", "/home/lvuser/controllerRecordings/YOUR-RECORDING-NAME.csv");```<br>
-13. Run the code, select your autonomous and run it. It's not my fault if it crashes
+13. Deploy to the robot, select your autonomous and run it. It's not my fault if it crashes into a wall
