@@ -9,7 +9,7 @@
 7. While connected to the robot with radio run ```ssh lvuser@10.TE.AM.2``` (for us lvuser@10.32.67.2)<br>
 8. Do ```cd controllerRecordings```<br>
 9. Do ```ls``` to find out the name of the recording you just made<br>
-10. Do ```mv YOUR-RECORDING.csv YOUR-NEW-NAME.csv``` to rename it<br>
+10. Do ```mv YOUR-RECORDING.csv YOUR-NEW-NAME.csv``` to rename it (tip: you can press tab to auto complete)<br>
 11. You can close your terminal now<br>
 12. Now go into ```RobotContainer.cpp``` and add an autonomous to the autonomous chooser like this:
 ```m_chooser.AddOption("WHATEVER-YOU-WANT", "/home/lvuser/controllerRecordings/YOUR-RECORDING-NAME.csv");```<br>
