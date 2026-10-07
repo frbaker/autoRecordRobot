@@ -54,7 +54,7 @@ RobotContainer::RobotContainer() {
     else{
         m_shooter.Stop();
     }
-  });
+  },{&m_drive});
 
   // Configure the button bindings
   ConfigureButtonBindings();
@@ -125,7 +125,7 @@ frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
     controllerPlaybackAuto = true;
 
     if(controllerPlaybackAuto){
-        return autoRecordLib::CreateAutonomousRoutine(routine,{&m_drive});
+        return autoRecordLib::CreateAutonomousRoutine(routine);
     }
 
   return frc2::InstantCommand([this] {}).ToPtr();
