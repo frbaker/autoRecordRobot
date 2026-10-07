@@ -1,6 +1,6 @@
 # How to create an autonomous with this project:
 
-1. Make sure ```CanRecordAuto``` is true in ```AutoConstants``` in ```Constants.h``` (The only reason it would be off is for if you're just running it without wanting to record an auto)<br>
+1. Make sure ```CanRecordAuto``` is true in ```AutoConstants``` in ```Constants.h``` (The only reason it would be false is for if you're just running it without wanting to record an auto)<br>
 2. Press down on the left stick to begin recording while in teleop<br>
 3. Do whatever you want to do<br>
 4. Press down on the left stick to stop recording while in teleop (do not disable the robot before pressing the left stick again)<br>
