@@ -1,10 +1,10 @@
 # How to create an autonomous with this project:
 
-1. Make sure CanRecordAuto is true in AutoConstants (The only reason it would be off is for if you're just running it without wanting to record an auto)<br>
+1. Make sure ```CanRecordAuto``` is true in ```AutoConstants``` in ```Constants.h``` (The only reason it would be off is for if you're just running it without wanting to record an auto)<br>
 2. Press down on the left stick to begin recording while in teleop<br>
 3. Do whatever you want to do<br>
 4. Press down on the left stick to stop recording while in teleop (do not disable the robot before pressing the left stick again)<br>
-5. It should now be saved to the roborio under lvuser/controllerRecordings/recording-TIME_AND_DATE.csv<br>
+5. It should now be saved to the roborio under ```lvuser/controllerRecordings/recording-TIME_AND_DATE.csv```<br>
 6. To rename it to something more readable, open up a terminal on your computer (PowerShell on windows)<br>
 7. While connected to the robot with radio run ```ssh lvuser@10.TE.AM.2``` (for us lvuser@10.32.67.2)<br>
 8. Do ```cd controllerRecordings```<br>
