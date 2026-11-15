@@ -38,22 +38,25 @@ RobotContainer::RobotContainer() {
   doneRecordingAutonomous = false;
 
   m_chooser.SetDefaultOption("test", "/home/lvuser/controllerRecordings/test.csv");
-  m_chooser.AddOption("hehe", "hehe");
+  m_chooser.AddOption("hehe", "/home/lvuser/controllerRecordings/test2.csv");
+  m_chooser.AddOption("circle", "/home/lvuser/controllerRecordings/circle.csv");
   frc::SmartDashboard::PutData("auto", &m_chooser);
 
-  autoRecordLib::RegisterAutoCommands([this]{/*Start stuff here. Like reset gyro maybe*/},[this](autoRecordLib::ControllerSnapshot snapshot){
-    m_drive.Drive(
-        -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftY, OIConstants::kDriveDeadband)},
-        -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftX, OIConstants::kDriveDeadband)},
-        -units::radians_per_second_t{frc::ApplyDeadband(snapshot.rightX, OIConstants::kDriveDeadband)},
-        false
-    );
-    if(snapshot.A){
-        m_shooter.Run();
-    }
-    else{
-        m_shooter.Stop();
-    }
+  autoRecordLib::RegisterAutoCommands(
+    [this]{/*Start stuff here. Like reset gyro maybe*/},
+    [this](autoRecordLib::ControllerSnapshot snapshot){
+        m_drive.Drive(
+            -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftY, OIConstants::kDriveDeadband)},
+            -units::meters_per_second_t{frc::ApplyDeadband(snapshot.leftX, OIConstants::kDriveDeadband)},
+            -units::radians_per_second_t{frc::ApplyDeadband(snapshot.rightX, OIConstants::kDriveDeadband)},
+            false
+        );
+        if(snapshot.A){
+            m_shooter.Run();
+        }
+        else{
+            m_shooter.Stop();
+        }
   },{&m_drive});
 
   // Configure the button bindings
@@ -77,10 +80,10 @@ RobotContainer::RobotContainer() {
                 std::cout << "Routine written to disk" << std::endl;
                 autoRecordLib::writeRoutineToDisk(m_recorder);
                 m_recorder.ClearSnapshots();
-                //recordedSnapshots.clear();
                 doneRecordingAutonomous = false;
             }
             else if(recordingAutonomous){
+                //std::cout << "recorded" << std::endl;
                 m_recorder.RecordSnapshot(m_driverController);
             }
         }
@@ -121,6 +124,7 @@ void RobotContainer::ConfigureButtonBindings() {
 frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
 
     std::string path = m_chooser.GetSelected();
+    std::cout << path << std::endl;
     autoRecordLib::Routine routine = autoRecordLib::getRoutineFromDisk(path);
     controllerPlaybackAuto = true;
 
