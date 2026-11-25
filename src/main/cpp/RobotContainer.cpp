@@ -78,7 +78,7 @@ RobotContainer::RobotContainer() {
         if(AutoConstants::CanRecordAuto){
             if(doneRecordingAutonomous){
                 std::cout << "Routine written to disk" << std::endl;
-                autoRecordLib::writeRoutineToDisk(m_recorder);
+                autoRecordLib::WriteRoutineToDisk(m_recorder);
                 m_recorder.ClearSnapshots();
                 doneRecordingAutonomous = false;
             }
@@ -125,7 +125,7 @@ frc2::CommandPtr RobotContainer::GetAutonomousCommand() {
 
     std::string path = m_chooser.GetSelected();
     std::cout << path << std::endl;
-    autoRecordLib::Routine routine = autoRecordLib::getRoutineFromDisk(path);
+    autoRecordLib::Routine routine = autoRecordLib::GetRoutineFromDisk(path);
     controllerPlaybackAuto = true;
 
     if(controllerPlaybackAuto){
